@@ -12,7 +12,6 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
-require('dotenv').config();
 
 // Database setup
 const apiKey = process.env.API_KEY;
@@ -24,21 +23,21 @@ mongoose.connect(apiKey)
         taskDecription: String,
         completed: Boolean
     }
-const Tabs = mongoose.model('Tabs', itemsSchema);
+const Tasks = mongoose.model('Tasks', itemsSchema);
 
 
 
 //get request to get tasks from mongoDB database
 app.get('/', (req,res) => {
-    Tabs.find()
-    .then((items) => res.json(items))
-    .catch((err) => res.status(400).json("Error: "+ err))
+    Tasks.find()
+        .then((items) => res.json(items))
+        .catch((err) => res.status(400).json("Error: "+ err))
 });
 
 //find specific task
 app.get("/task/:id", (req,res) => {
     const id = req.params.id;
-    Tabs.find({_id: id})
+    Tasks.find({_id: id})
         .then((items) => res.json(items))
         .catch((err) => res.status(400).json("Error: "+ err))
 })
@@ -46,7 +45,7 @@ app.get("/task/:id", (req,res) => {
 
 //add new task
 app.post('/newtask', (req, res) => {
-    const newItem = new Tabs(
+    const newItem = new Tasks(
         {
             taskName: req.body.taskName,
             taskDecription: req.body.taskDecription,
@@ -54,19 +53,19 @@ app.post('/newtask', (req, res) => {
         }
     );
     newItem.save()
-    .then(item => console.log(item))
-    .catch(err => res.status(400).json("Error "+err))
+        .then(item => res.json(item))
+        .catch(err => res.status(400).json("Error "+err))
 })
 
 // update task status to completed
 app.put('/update/:id', (req,res) => {
     const updatedItem = {completed: true}
-    Tabs.findByIdAndUpdate(
+    Tasks.findByIdAndUpdate(
         {_id: req.params.id},
-        {$set: updatedItem},
-        (req, res) => {
-        console.log('item updated')
-    })
+        {$set: updatedItem}
+    )
+        .then((items) => res.json(items))
+        .catch((err) => res.status(400).json("Error: "+ err))
 })
 
 // update task information
@@ -75,22 +74,21 @@ app.put("/taskupdate/:id", (req,res) => {
         taskName: req.body.taskName,
         taskDecription: req.body.taskDecription
     }
-    console.log(updatedItem)
 
-    Tabs.findByIdAndUpdate(
+    Tasks.findByIdAndUpdate(
         {_id: req.params.id},
-        {$set: updatedItem},
-        (req,res) => {
-        console.log("Item updated")
-    })
+        {$set: updatedItem}
+    )
+        .then((items) => res.json(items))
+        .catch((err) => res.status(400).json("Error: "+ err))
 })
 
 // delete task
 app.delete("/delete/:id", (req,res) => {
     const deleteId = req.params.id;
-    Tabs.findByIdAndRemove(deleteId, (req,res) => {
-        console.log('deleted')
-    })
+    Tasks.findByIdAndRemove(deleteId)
+        .then((items) => res.json(items))
+        .catch((err) => res.status(400).json("Error: "+ err))
 })
 
 
